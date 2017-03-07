@@ -1,0 +1,29 @@
+ASR1K running IOS-XE 16.4 minimal configuration fro REST-API
+<snip>
+
+username XXXXXXXX privilege 15 password 0 XXXXXXXX
+
+ 
+interface GigabitEthernet3
+ description interface used for REST-API
+ ip address 172.16.1.133 255.255.255.0
+ 
+interface VirtualPortGroup0
+ description virtual port group for REST-API
+ ip unnumbered GigabitEthernet3
+ 
+! Create virtual service tie the VNIC to VirtualPortGroup0
+! Guest IP address must be on the same subnet as GigabitEthernet 3
+! Guest IP will be used to make the REST-API calls
+virtual-service csr_mgmt
+ vnic gateway VirtualPortGroup0
+  guest ip address 172.16.1.107
+ activate
+ 
+ ! Need to enable HTTPS
+ ip http secure-server
+ 
+ !Provide a static route for REST-API IP address to use VirtualPortGroup0
+ ip route 172.16.1.107 255.255.255.255 VirtualPortGroup0
+ 
+ 
