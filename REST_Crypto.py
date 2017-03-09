@@ -26,6 +26,7 @@ def getIP():
             print('Entry is not a valid IP Address:', host)
     return(host_addr)
 
+
 def getAuth():
     #get the username and password and store them in a dictionary
     credentials = {
@@ -34,13 +35,13 @@ def getAuth():
     }
     return (credentials)
 
+
 def getToken(userauth, hostAddr):
     #construct http post for token
     #userauth - dictionary of username and password
     #hostAddr - IP address of API
     requests.packages.urllib3.disable_warnings()
     url = "https://"+hostAddr+":55443/api/v1/auth/token-services"
-    print (url)
     headers = {
         "content-type": "application/json"
     }
@@ -53,15 +54,65 @@ def getToken(userauth, hostAddr):
     except requests.exceptions.RequestException as err:
         print (err)
         exit()
-
     data = response.json()
     pprint ("Token for %s : %s" % (hostAddr, data['token-id']))
+    return (data['token-id'])
+
+
+def getHostname(hostAddr, sessionToken):
+    #get the hostname
+    #sessionToken - authorization token
+    #hostAddr - IP address of API
+    requests.packages.urllib3.disable_warnings()
+    url = "https://"+hostAddr+":55443/api/v1//global/host-name"
+    headers = {
+        "content-type": "application/json",
+        "X-AUTH-TOKEN": sessionToken
+    }
+    try:
+        response = requests.get(url, headers=headers, verify=False)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        print (err)
+        exit()
+    except requests.exceptions.RequestException as err:
+        print (err)
+        exit()
+    data = response.json()
+    print ("Hostname is", data['host-name'])
+    return(data['host-name'])
+
+
+def getInterfaces(hostAddr, sessionToken):
+    #get the interfaces
+    #sessionToken - authorization token
+    #hostAddr - IP address of API
+    requests.packages.urllib3.disable_warnings()
+    url = "https://"+hostAddr+":55443/api/v1/interfaces"
+    headers = {
+        "content-type": "application/json",
+        "X-AUTH-TOKEN": sessionToken
+    }
+    try:
+        response = requests.get(url, headers=headers, verify=False)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        print (err)
+        exit()
+    except requests.exceptions.RequestException as err:
+        print (err)
+        exit()
+    data = response.json()
+    print ("Interface list:")
+    pprint(data)
 
 def main():
     print("Python Script to access REST-API")
     login = getAuth() #get userid and password
     host_ip = getIP() #get ipaddress
     token = getToken(login, host_ip) #get the token
+    hostname = getHostname(host_ip, token)
+    getInterfaces(host_ip, token)
 
 
 if __name__ == "__main__":
