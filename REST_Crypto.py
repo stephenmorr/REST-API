@@ -1,7 +1,7 @@
 #!usr/bin/python3
 
-#My first Python3 script to call a REST-API on an ASR1K
-#version 1.0 03/06/17
+#Python3 script to call a REST-API on an ASR1K
+#version 1.0 03/12/17
 #Stephen Orr
 
 import requests
@@ -84,9 +84,10 @@ def getHostname(hostAddr, sessionToken):
 
 
 def getInterfaces(hostAddr, sessionToken):
-    #get the interfaces
+    #get the devices interfaces
     #sessionToken - authorization token
     #hostAddr - IP address of API
+    #interface_list - a dictionary with key 'items" of an array of dictionaries
     requests.packages.urllib3.disable_warnings()
     url = "https://"+hostAddr+":55443/api/v1/interfaces"
     headers = {
@@ -102,12 +103,16 @@ def getInterfaces(hostAddr, sessionToken):
     except requests.exceptions.RequestException as err:
         print (err)
         exit()
-    data = response.json()
-    print ("Interface list:")
-    pprint(data)
+    interface_list = response.json()
+    print("Interfaces")
+    interface = 0
+    while interface < len(interface_list['items']):
+        print(interface_list['items'][interface]['if-name'] , "IP Address:" , interface_list['items'][interface]['ip-address'])
+        interface +=1
+
 
 def main():
-    print("Python Script to access REST-API")
+    print("Python 3 Code to access REST-API")
     login = getAuth() #get userid and password
     host_ip = getIP() #get ipaddress
     token = getToken(login, host_ip) #get the token
