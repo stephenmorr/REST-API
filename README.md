@@ -9,10 +9,13 @@ http://www.cisco.com/c/en/us/td/docs/routers/csr1000/software/configuration/b_CS
 
 Dependencies
 pip install requests
+pip install ipaddress
 
 Version 1:
  1. Takes in username/password and IP address of rest API for IOS-XE (assumes default port of 55443)
  2. Prints out a list of interfaces
+ 3. Prints the list of IKE Policies
+ 4. Prints the IPSec Policies
 
 
-End goal is to check the crypto settings (IPSec, SSH etc) on an IOS-XE platform and provide recommendations on cipher strength.
+End goal is to check the crypto settings (IKE/IPSec) on an IOS-XE platform 
