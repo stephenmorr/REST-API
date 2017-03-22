@@ -1,8 +1,16 @@
 #!usr/bin/python3
 
-#Python3 script to call a REST-API on an ASR1K
-#version 0.315 03/15/17
-#Stephen Orr
+"""
+Python3 script to call a REST-API on a Cisco IOS-XE device
+Program asks for the username/password and IP Address of host
+then it gets the REST access Token and finally prints:
+    IP Address (v4 or v6)
+    Name
+    Interfaces
+    IKE and IPSec Policies
+version 0.321 03/21/17
+Stephen Orr
+"""
 
 import requests
 import json
@@ -12,7 +20,10 @@ from pprint import pprint
 
 
 def getIP():
-    #get the REST-API ip address of the host IPv4 or IPv6
+    """
+    function that gets the REST-API Host ip address for user can be
+    either IPv4 or IPv6 returns a string of the IP Address
+    """
     notIP = True #variable to make sure the entry is a valid IP
     while notIP:
         try:
@@ -20,7 +31,8 @@ def getIP():
             if ipaddress.ip_address(host).version == 4:
                 host_addr = str(ipaddress.ip_address(host))
             else:
-                 host_addr = "["+str(ipaddress.ip_address(host))+"]"
+                 if ipaddress.ip_address(host).version == 6:
+                     host_addr = "["+str(ipaddress.ip_address(host))+"]"
             notIP = False
         except ValueError:
             print('Entry is not a valid IP Address:', host)
@@ -28,7 +40,10 @@ def getIP():
 
 
 def getAuth():
-    #get the username and password and store them in a dictionary
+    """
+    function that gets the username and password to access the REST-API
+    returns a dictonary with username and password
+    """
     credentials = {
         'username' : input("Username:"),
         'password' : getpass.getpass()
@@ -37,16 +52,24 @@ def getAuth():
 
 
 def getToken(userauth, hostAddr):
-    #construct http post for token - REST-API needs a token
-    #userauth - dictionary of username and password
-    #hostAddr - IP address of REST-API
+    """
+    function that constructs the http post for the session authentication token
+    input is username/password and returns the token
+    userauth - dictionary of username and password
+    hostAddr - IP address of REST-API
+    """
     requests.packages.urllib3.disable_warnings()
     url = "https://"+hostAddr+":55443/api/v1/auth/token-services"
     headers = {
         "content-type": "application/json"
     }
     try:
-        response = requests.post(url, auth=(userauth['username'],userauth['password']), headers=headers, verify=False)
+        response = requests.post(
+                        url,
+                        auth=(userauth['username'],userauth['password']),
+                        headers=headers,
+                        verify=False
+        )
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
         print (err)
@@ -60,9 +83,12 @@ def getToken(userauth, hostAddr):
 
 
 def getHostname(hostAddr, sessionToken):
-    #get the hostname
-    #sessionToken - authorization token
-    #hostAddr - IP address of REST-API
+    """
+    function to get the hostname - takes in the following
+    sessionToken - authorization token
+    hostAddr - IP address of REST-API
+    returns the hostname
+    """
     requests.packages.urllib3.disable_warnings()
     url = "https://"+hostAddr+":55443/api/v1//global/host-name"
     headers = {
@@ -84,10 +110,14 @@ def getHostname(hostAddr, sessionToken):
 
 
 def getInterfaces(hostAddr, sessionToken):
-    #get the devices interfaces
-    #sessionToken - authorization token
-    #hostAddr - IP address of REST-API
-    #interface_list - a dictionary with key 'items" of an array of dictionaries
+    """ Funtion that gets the devices interfaces
+        sessionToken - authorization token
+        hostAddr - IP address of REST-API
+
+        The json data for the interfaces are stored as a dictionary "items"
+        inside that dictionary is an array of unnamed dictionaries that you need
+        to iterate through to get the interface values.
+    """
     requests.packages.urllib3.disable_warnings()
     url = "https://"+hostAddr+":55443/api/v1/interfaces"
     headers = {
@@ -112,9 +142,14 @@ def getInterfaces(hostAddr, sessionToken):
 
 
 def getIke(hostAddr, sessionToken):
-    #get the Ike policy information
-    #sessionToken - authorization token
-    #hostAddr - IP address of REST-API
+    """ Function to get the Ike policy information
+    sessionToken - authorization token
+    hostAddr - IP address of REST-API
+
+    The json data for the IKE Policies are stored in a dictionary "items"
+    inside that dictionary is an array of unnamed dictionaries that you need
+    to iterate through to get the IKE Policies.
+    """
     requests.packages.urllib3.disable_warnings()
     url = "https://"+hostAddr+":55443/api/v1/vpn-svc/ike/policies"
     headers = {
@@ -130,14 +165,24 @@ def getIke(hostAddr, sessionToken):
     except requests.exceptions.RequestException as err:
         print (err)
         exit()
-    ikeData = response.json()
-    print("Ike Policies")
-    pprint(ikeData['items'])
+    ikePolicies = response.json()
+    if ikePolicies["items"] == []:
+        print ("No IKE policies defined")
+    else:
+        print("IKE Policies")
+        for policy in ikePolicies["items"]:
+            pprint(policy)
+
 
 def getIPSec(hostAddr, sessionToken):
-    #get the IPSec policy information
-    #sessionToken - authorization token
-    #hostAddr - IP address of REST-API
+    """ Function to get the IPSec policy information
+    sessionToken - authorization token
+    hostAddr - IP address of REST-API
+
+    The json data for the IPSec Policies are stored in a dictionary "items"
+    inside that dictionary is an array of unnamed dictionaries that you need
+    to iterate through to get the IPSec Policies.
+    """
     requests.packages.urllib3.disable_warnings()
     url = "https://"+hostAddr+":55443/api/v1/vpn-svc/ipsec/policies"
     headers = {
@@ -153,9 +198,14 @@ def getIPSec(hostAddr, sessionToken):
     except requests.exceptions.RequestException as err:
         print (err)
         exit()
-    ipsecData = response.json()
-    print("IPSec Policies")
-    pprint(ipsecData['items'])
+    ipsecPolicies = response.json()
+    if ipsecPolicies["items"] == []:
+        print("No IPSec policies defined")
+    else:
+        print("IPsec Policies")
+        for policy in ipsecPolicies["items"]:
+            pprint(policy)
+
 
 
 def main():

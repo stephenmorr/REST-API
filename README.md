@@ -12,10 +12,10 @@ pip install requests
 pip install ipaddress
 
 Version 1:
- 1. Takes in username/password and IP address of rest API for IOS-XE (assumes default port of 55443)
+ 1. Takes in username/password and IP address of REST API for IOS-XE (assumes default port of 55443)
  2. Prints out a list of interfaces
  3. Prints the list of IKE Policies
  4. Prints the IPSec Policies
 
 
-End goal is to check the crypto settings (IKE/IPSec) on an IOS-XE platform 
+End goal is to check the crypto settings (IKE/IPSec) on an IOS-XE platform
