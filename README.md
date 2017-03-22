@@ -9,7 +9,6 @@ http://www.cisco.com/c/en/us/td/docs/routers/csr1000/software/configuration/b_CS
 
 
 Dependencies:
-
 pip install requests
 pip install ipaddress
 
