@@ -3,12 +3,12 @@
 """
 Python3 script to call a REST-API on a Cisco IOS-XE device
 Program asks for the username/password and IP Address of host
-then it gets the REST access Token and finally prints:
+then it gets the REST access Token and prints:
     IP Address (v4 or v6)
     Name
     Interfaces
     IKE and IPSec Policies
-version 0.321 03/21/17
+version 0.322 03/22/17
 Stephen Orr
 """
 
@@ -149,6 +149,11 @@ def getIke(hostAddr, sessionToken):
     The json data for the IKE Policies are stored in a dictionary "items"
     inside that dictionary is an array of unnamed dictionaries that you need
     to iterate through to get the IKE Policies.
+
+    To make parsing/comparison easier - I converted the json data into a
+    ikePolicy dictionary made up of dictionaries of the individual policies to
+    better group the attributes
+        ikePolicy[policy#][attribute]
     """
     requests.packages.urllib3.disable_warnings()
     url = "https://"+hostAddr+":55443/api/v1/vpn-svc/ike/policies"
@@ -165,14 +170,34 @@ def getIke(hostAddr, sessionToken):
     except requests.exceptions.RequestException as err:
         print (err)
         exit()
-    ikePolicies = response.json()
-    if ikePolicies["items"] == []:
+    ikeData = response.json()
+    ikePolicy={}  #initialize dictionary
+    ikePolicy2={}
+    if ikeData["items"] == []:
         print ("No IKE policies defined")
-    else:
-        print("IKE Policies")
-        for policy in ikePolicies["items"]:
-            pprint(policy)
-
+        return(ikePolicy)
+    for policy in ikeData["items"]:
+        policyNumber = ('IKE_Policy'+ str(policy['priority-id']))
+        ikePolicy.update({policyNumber: {
+                                        'DHGroup':policy['dhGroup'],
+                                        'lifetime':policy['lifetime'],
+                                        'hash':policy['hash'],
+                                        'auth':policy['local-auth-method'],
+                                        'version':policy['version'],
+                                        'encryption':policy['encryption'],
+                                        'policy-id':policy['priority-id']
+                                        }
+                         })
+        print (policy.items())
+        #for key, value in policy.items():
+        #    print (key,value)
+            #ikePolicy2.update({policyNumber: {
+            #                            key:policy[key]
+            #                            }
+            #             })
+    print("There are %s IKE Policies defined" % (len(ikeData['items'])))
+    pprint (ikePolicy)
+    pprint (ikePolicy2)
 
 def getIPSec(hostAddr, sessionToken):
     """ Function to get the IPSec policy information
@@ -215,7 +240,7 @@ def main():
     token = getToken(login, host_ip) #get the token
     hostname = getHostname(host_ip, token)
     getInterfaces(host_ip, token)
-    getIke(host_ip, token)
+    ikePolicies = getIke(host_ip, token)
     getIPSec(host_ip, token)
 
 if __name__ == "__main__":
