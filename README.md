@@ -1,5 +1,6 @@
 # REST-API
-Python3 script to access REST-API on an ASR1K
+Python3 script to access REST-API on an IOS-XE platform and check the encryption
+policies
 
 Minimal ASR1K/IOS-XE configuration is located in REST-API-ASR1K.txt
 
@@ -11,7 +12,7 @@ Dependencies
 pip install requests
 pip install ipaddress
 
-Version 1:
+
  1. Takes in username/password and IP address of REST API for IOS-XE (assumes default port of 55443)
  2. Prints out a list of interfaces
  3. Prints the list of IKE Policies

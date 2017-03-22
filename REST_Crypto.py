@@ -172,7 +172,6 @@ def getIke(hostAddr, sessionToken):
         exit()
     ikeData = response.json()
     ikePolicy={}  #initialize dictionary
-    ikePolicy2={}
     if ikeData["items"] == []:
         print ("No IKE policies defined")
         return(ikePolicy)
@@ -188,16 +187,10 @@ def getIke(hostAddr, sessionToken):
                                         'policy-id':policy['priority-id']
                                         }
                          })
-        print (policy.items())
-        #for key, value in policy.items():
-        #    print (key,value)
-            #ikePolicy2.update({policyNumber: {
-            #                            key:policy[key]
-            #                            }
-            #             })
+
     print("There are %s IKE Policies defined" % (len(ikeData['items'])))
     pprint (ikePolicy)
-    pprint (ikePolicy2)
+    return(ikePolicy)
 
 def getIPSec(hostAddr, sessionToken):
     """ Function to get the IPSec policy information
