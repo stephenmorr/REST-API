@@ -9,8 +9,13 @@ http://www.cisco.com/c/en/us/td/docs/routers/csr1000/software/configuration/b_CS
 
 
 Dependencies:
+<<<<<<< HEAD
  1. pip install requests
  2. pip install ipaddress
+=======
+pip install requests
+pip install ipaddress
+>>>>>>> master
 
 
  1. Takes in username/password and IP address of REST API for IOS-XE (assumes default port of 55443)
